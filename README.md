@@ -1,5 +1,5 @@
 ---
-title: Woook Base
+title: ok-time
 emoji: 💻
 colorFrom: blue
 colorTo: red
@@ -8,4 +8,4 @@ pinned: false
 app_port: 3000
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+simple time show page
