@@ -32,7 +32,7 @@ function generateTimeHTML() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Woook Base - 时间显示</title>
+    <title>ok-time - 时间显示</title>
     <style>
         * {
             margin: 0;
