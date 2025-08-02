@@ -333,17 +333,30 @@
         let timezoneData = [];
 
         // 主题切换功能
+        // 主题切换功能
         function toggleThemeMenu() {
-            const menu = document.querySelector('.theme-options');
+            const menu = document.querySelector(".theme-options");
             isThemeMenuOpen = !isThemeMenuOpen;
-            menu.classList.toggle('show', isThemeMenuOpen);
+            if (isThemeMenuOpen) {
+                menu.classList.add("show");
+                menu.style.display = "block";
+            } else {
+                menu.classList.remove("show");
+                menu.style.display = "none";
+            }
         }
 
         function changeTheme(themeIndex) {
             document.body.style.background = themes[themeIndex - 1];
-            document.body.style.backgroundAttachment = 'fixed';
-            localStorage.setItem('selectedTheme', themeIndex);
-            toggleThemeMenu();
+            document.body.style.backgroundAttachment = "fixed";
+            localStorage.setItem("selectedTheme", themeIndex);
+            // 选择主题后确保关闭菜单
+            isThemeMenuOpen = false;
+            const menu = document.querySelector(".theme-options");
+            if (menu) {
+                menu.classList.remove("show");
+                menu.style.display = "none";
+            }
         }
 
         // 时间更新功能
@@ -401,8 +414,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 确保主题菜单默认关闭
             isThemeMenuOpen = false;
-            const menu = document.querySelector('.theme-options');
-            menu.classList.remove('show');
+            const menu = document.querySelector(".theme-options");
+            if (menu) {
+                menu.classList.remove("show");
+                menu.style.display = "none";
+            }
             
             // 恢复保存的主题
             const savedTheme = localStorage.getItem('selectedTheme') || '1';
