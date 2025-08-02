@@ -1,0 +1,145 @@
+name: Build and Push Docker Image to GHCR
+
+# 触发条件：仅在 main 分支手动触发
+on:
+  workflow_dispatch:  # 允许手动触发工作流
+    branches:
+      - main
+    inputs:
+      tag:
+        description: 'Image tag (default: date-based)'
+        required: false
+        default: ''
+        type: string
+
+# 设置工作流权限
+permissions:
+  contents: read      # 读取仓库内容
+  packages: write     # 写入包（推送到 GHCR）
+
+# 定义环境变量
+env:
+  REGISTRY: ghcr.io                           # GitHub Container Registry 地址
+  IMAGE_NAME: ${{ github.repository }}       # 镜像名称（格式：用户名/仓库名）
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest    # 使用最新的 Ubuntu 运行器
+    
+    steps:
+    # 第一步：检出代码
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0        # 获取完整的 Git 历史（用于版本信息）
+    
+    # 第二步：设置 Docker Buildx（支持多平台构建）
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64    # 支持 AMD64 和 ARM64 架构
+    
+    # 第三步：登录到 GitHub Container Registry
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}           # 登录到 ghcr.io
+        username: ${{ github.actor }}          # 使用当前 GitHub 用户名
+        password: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub 提供的 token
+    
+    # 第四步：提取镜像元数据（标签和标签）
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          # 默认的 latest 标签（会自动更新）
+          type=raw,value=latest
+          # 基于日期的默认标签
+          type=raw,value={{date 'YYYYMMDD-HHmmss'}}
+          # main 分支标签
+          type=raw,value=main
+          # 如果提供了自定义标签则使用
+          type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event.inputs.tag != '' }}
+        labels: |
+          # OCI 标准标签
+          org.opencontainers.image.title=ok-time
+          org.opencontainers.image.description=Simple time display page
+          org.opencontainers.image.vendor=${{ github.repository_owner }}
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.created={{date 'iso8601'}}
+    
+    # 第五步：构建并推送 Docker 镜像
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .                      # 构建上下文为当前目录
+        file: ./Dockerfile             # Dockerfile 路径
+        platforms: linux/amd64,linux/arm64  # 多平台构建
+        push: true                     # 构建完成后推送到仓库
+        tags: ${{ steps.meta.outputs.tags }}     # 使用提取的标签
+        labels: ${{ steps.meta.outputs.labels }} # 使用提取的标签
+        cache-from: type=gha           # 使用 GitHub Actions 缓存
+        cache-to: type=gha,mode=max    # 将构建缓存保存到 GitHub Actions
+        build-args: |
+          # 传递构建参数
+          BUILD_DATE={{date 'iso8601'}}
+          VCS_REF=${{ github.sha }}
+    
+    # 第六步：输出构建结果
+    - name: Output image details
+      run: |
+        echo "🎉 Docker image built and pushed successfully!"
+        echo "📦 Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+        echo "🏷️  Tags: ${{ steps.meta.outputs.tags }}"
+        echo "🔗 Package URL: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}"
+
+  # 可选：部署验证作业
+  verify-deployment:
+    name: Verify Image
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: success()  # 仅在构建成功后执行
+    
+    steps:
+    # 验证镜像是否可以正常拉取和运行
+    - name: Pull and test image
+      run: |
+        # 拉取刚刚构建的镜像
+        docker pull ${{ env.REGISTRY }}/${{ github.repository }}:latest
+        
+        # 运行容器进行基本测试
+        docker run --rm -d --name ok-time-test -p 3000:3000 \
+          ${{ env.REGISTRY }}/${{ github.repository }}:latest
+        
+        # 等待服务启动
+        sleep 10
+        
+        # 测试服务是否响应
+        curl -f http://localhost:3000/ || exit 1
+        
+        # 检查页面标题是否正确
+        if curl -s http://localhost:3000/ | grep -q "ok-time"; then
+          echo "✅ Service is working correctly!"
+        else
+          echo "❌ Service test failed!"
+          exit 1
+        fi
+        
+        # 清理测试容器
+        docker stop ok-time-test
+    
+    # 输出最终的使用说明
+    - name: Usage instructions
+      run: |
+        echo "🚀 Deployment completed successfully!"
+        echo ""
+        echo "📋 Usage Instructions:"
+        echo "   docker pull ${{ env.REGISTRY }}/${{ github.repository }}:latest"
+        echo "   docker run -p 3000:3000 ${{ env.REGISTRY }}/${{ github.repository }}:latest"
+        echo ""
+        echo "🌐 Access your application at: http://localhost:3000"
+        echo "📦 Package page: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}"
