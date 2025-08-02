@@ -14,7 +14,7 @@ class TimeController {
       let html = fs.readFileSync(templatePath, 'utf8');
       
       // 简单的模板替换
-      html = html.replace('{{title}}', `${config.app.name} - 时间显示`);
+      html = html.replace("{{title}}", config.app.name);
       html = html.replace('{{appName}}', config.app.name);
       
       res.setHeader('Content-Type', 'text/html; charset=utf-8');

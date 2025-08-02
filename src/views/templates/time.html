@@ -3,295 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+    <title>ok-time</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
             min-height: 100vh;
+            background-attachment: fixed;
             display: flex;
-            justify-content: center;
             align-items: center;
-            color: white;
-            overflow: hidden;
+            justify-content: center;
+            padding: 20px;
         }
-        
-        .time-container {
-            text-align: center;
+
+        /* 主题背景 */
+        .theme-1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .theme-2 { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); }
+        .theme-3 { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
+        .theme-4 { background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%); }
+        .theme-5 { background: linear-gradient(135deg, #232526 0%, #414345 100%); }
+        .theme-6 { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .theme-7 { background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%); }
+
+        /* 主容器 */
+        .main-container {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 3rem 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 90vw;
-            animation: fadeIn 1s ease-out;
+            max-width: 900px;
+            width: 100%;
+            animation: slideUp 0.8s ease-out;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
+        /* 标题 */
         .title {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 300;
             margin-bottom: 2rem;
             opacity: 0.9;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
-        
+
+        /* 时间显示 */
         .time-display {
-            font-size: 4rem;
+            font-size: 5rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
+
         .date-display {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 300;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
             opacity: 0.8;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
-        
-        .timezone-info {
+
+        /* 时区网格 */
+        .timezone-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
             margin-top: 2rem;
         }
-        
+
         .timezone-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
-        
-        .timezone-label {
+
+        .timezone-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .city-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .city-time {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .city-date {
             font-size: 0.9rem;
             opacity: 0.7;
-            margin-bottom: 0.5rem;
+            font-weight: 300;
         }
-        
-        .timezone-time {
-            font-size: 1.2rem;
-            font-weight: 600;
+
+        .time-diff {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 0.3rem;
+            font-weight: 300;
         }
-        
-        .status-indicator {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 12px;
-            height: 12px;
+
+        /* 主题切换器 */
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .theme-toggle {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: #4ade80;
-            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        .status-indicator.offline {
-            background: #f87171;
-            box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
-        
-        @media (max-width: 768px) {
-            .time-container {
-                padding: 2rem 1rem;
+
+        .theme-options {
+            position: absolute;
+            top: 75px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: none;
+            min-width: 200px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .theme-options.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-10px);
             }
-            
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .theme-option {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-option:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-option::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .time-display {
+                font-size: 3.5rem;
+                letter-spacing: 2px;
+            }
+
+            .date-display {
+                font-size: 1.4rem;
+            }
+
+            .timezone-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .theme-selector {
+                top: 15px;
+                right: 15px;
+            }
+
+            .theme-toggle {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .theme-options {
+                right: -20px;
+                min-width: 180px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 1.5rem 1rem;
+            }
+
             .title {
                 font-size: 1.5rem;
             }
-            
+
             .time-display {
-                font-size: 2.5rem;
+                font-size: 2.8rem;
             }
-            
+
             .date-display {
-                font-size: 1.2rem;
-            }
-            
-            .timezone-info {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .time-display {
-                font-size: 2rem;
-            }
-            
-            .title {
                 font-size: 1.2rem;
             }
         }
     </style>
+</head>
+<body>
+    <!-- 主题切换器 -->
+    <div class="theme-selector">
+        <button class="theme-toggle">🎨</button>
+        <div class="theme-options">
+            <div class="theme-grid">
+                <div class="theme-option" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);" data-theme="1" title="深蓝夜空"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);" data-theme="2" title="紫青渐变"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);" data-theme="3" title="深海绿"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);" data-theme="4" title="紫绿极光"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #232526 0%, #414345 100%);" data-theme="5" title="经典深灰"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);" data-theme="6" title="深海蓝"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);" data-theme="7" title="神秘紫"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <h1 class="title">ok-time</h1>
+        <div class="time-display" id="current-time">加载中...</div>
+        <div class="date-display" id="current-date">加载中...</div>
+        
+        <div class="timezone-grid" id="timezone-info">
+            <!-- 时区信息将动态加载 -->
+        </div>
+    </div>
+
     <script>
-        let updateTimer = null;
-        let isUpdating = false;
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
-        const UPDATE_INTERVAL = 5000; // 改为5秒更新一次，减少服务器压力
-        
-        // 防抖函数，避免重复请求
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
+        // 主题管理
+        let isThemeMenuOpen = false;
+        const themes = [
+            "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+            "linear-gradient(135deg, #2d1b69 0%, #11998e 100%)",
+            "linear-gradient(135deg, #134e5e 0%, #71b280 100%)",
+            "linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)",
+            "linear-gradient(135deg, #232526 0%, #414345 100%)",
+            "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+            "linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%)"
+        ];
+
+        // 时区数据
+        let timezoneData = [];
+
+        // 主题切换功能
+        function toggleThemeMenu() {
+            const menu = document.querySelector('.theme-options');
+            isThemeMenuOpen = !isThemeMenuOpen;
+            menu.classList.toggle('show', isThemeMenuOpen);
         }
-        
-        // 更新状态指示器
-        function updateStatusIndicator(online) {
-            const indicator = document.getElementById('status-indicator');
-            if (indicator) {
-                indicator.className = online ? 'status-indicator' : 'status-indicator offline';
-            }
+
+        function changeTheme(themeIndex) {
+            document.body.style.background = themes[themeIndex - 1];
+            document.body.style.backgroundAttachment = 'fixed';
+            localStorage.setItem('selectedTheme', themeIndex);
+            toggleThemeMenu();
         }
-        
-        // 格式化时间显示（客户端计算，减少服务器请求）
-        function updateClientTime() {
+
+        // 时间更新功能
+        function updateCurrentTime() {
             const now = new Date();
-            
-            // 更新主时间显示
             const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
             if (timeElement) {
                 timeElement.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
             }
-            
-            // 更新日期显示  
-            const dateElement = document.getElementById('current-date');
             if (dateElement) {
-                dateElement.textContent = now.toLocaleDateString('zh-CN', {
-                    year: 'numeric',
-                    month: 'long',
+                dateElement.textContent = now.toLocaleDateString('zh-CN', { 
+                    year: 'numeric', 
+                    month: 'long', 
                     day: 'numeric',
                     weekday: 'long'
                 });
             }
         }
-        
-        // 从服务器获取时区数据（减少频率）
-        function fetchTimezoneData() {
-            if (isUpdating) {
-                console.log('正在更新中，跳过本次请求');
-                return;
-            }
+
+        function updateTimezones() {
+            const container = document.getElementById('timezone-info');
+            if (!container || !timezoneData.length) return;
             
-            isUpdating = true;
-            updateStatusIndicator(true);
+            const now = new Date();
             
-            fetch('/api/time')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // 重置重试计数
-                    retryCount = 0;
-                    
-                    // 更新时区信息（这是主要需要从服务器获取的数据）
-                    const timezoneContainer = document.getElementById('timezone-info');
-                    if (timezoneContainer && data.timezones) {
-                        timezoneContainer.innerHTML = data.timezones.map(tz => `
-                            <div class="timezone-card">
-                                <div class="timezone-label">${tz.name} (${tz.label})</div>
-                                <div class="timezone-time">${tz.time}</div>
-                            </div>
-                        `).join('');
-                    }
-                    
-                    updateStatusIndicator(true);
-                    console.log('时区数据更新成功');
-                })
-                .catch(err => {
-                    console.error('获取时区数据失败:', err);
-                    retryCount++;
-                    updateStatusIndicator(false);
-                    
-                    // 如果重试次数过多，增加重试间隔
-                    if (retryCount >= MAX_RETRIES) {
-                        console.warn(`连续失败 ${MAX_RETRIES} 次，将延长更新间隔`);
-                        clearInterval(updateTimer);
-                        updateTimer = setInterval(fetchTimezoneData, UPDATE_INTERVAL * 2); // 延长到10秒
-                    }
-                })
-                .finally(() => {
-                    isUpdating = false;
-                });
+            container.innerHTML = timezoneData.map(tz => {
+                let diffText = tz.timeDiff || '基准时间';
+                
+                return `
+                    <div class="timezone-card">
+                        <div class="city-name">${tz.name}</div>
+                        <div class="city-time">${tz.time}</div>
+                        <div class="city-date">${tz.date}</div>
+                        <div class="time-diff">距北京时间 ${diffText}</div>
+                    </div>
+                `;
+            }).join('');
         }
-        
-        // 防抖的时区数据更新函数
-        const debouncedFetchTimezoneData = debounce(fetchTimezoneData, 1000);
-        
-        // 页面加载完成后初始化
+
+        // 获取时区数据
+        async function fetchTimezones() {
+            try {
+                const response = await fetch('/api/time');
+                const data = await response.json();
+                timezoneData = data.timezones || [];
+                updateTimezones();
+            } catch (error) {
+                console.error('获取时区数据失败:', error);
+            }
+        }
+
+        // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('页面加载完成，初始化时间显示');
+            // 确保主题菜单默认关闭
+            isThemeMenuOpen = false;
+            const menu = document.querySelector('.theme-options');
+            menu.classList.remove('show');
             
-            // 创建状态指示器
-            const statusIndicator = document.createElement('div');
-            statusIndicator.id = 'status-indicator';
-            statusIndicator.className = 'status-indicator';
-            document.querySelector('.time-container').appendChild(statusIndicator);
+            // 恢复保存的主题
+            const savedTheme = localStorage.getItem('selectedTheme') || '1';
+            changeTheme(parseInt(savedTheme));
             
-            // 立即更新一次客户端时间
-            updateClientTime();
+            // 绑定主题切换事件
+            document.querySelector('.theme-toggle').addEventListener('click', toggleThemeMenu);
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    changeTheme(parseInt(this.dataset.theme));
+                });
+            });
             
-            // 立即获取一次时区数据
-            fetchTimezoneData();
-            
-            // 设置客户端时间更新（每秒更新，不依赖服务器）
-            setInterval(updateClientTime, 1000);
-            
-            // 设置时区数据更新（每5秒更新，减少服务器压力）
-            updateTimer = setInterval(debouncedFetchTimezoneData, UPDATE_INTERVAL);
-            
-            // 页面失焦时停止更新，节省资源
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    console.log('页面不可见，停止时区数据更新');
-                    clearInterval(updateTimer);
-                } else {
-                    console.log('页面可见，恢复时区数据更新');
-                    updateTimer = setInterval(debouncedFetchTimezoneData, UPDATE_INTERVAL);
-                    debouncedFetchTimezoneData(); // 立即更新一次
+            // 点击外部关闭主题菜单
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.theme-selector') && isThemeMenuOpen) {
+                    toggleThemeMenu();
                 }
             });
-        });
-        
-        // 页面卸载时清理定时器
-        window.addEventListener('beforeunload', function() {
-            if (updateTimer) {
-                clearInterval(updateTimer);
-            }
+            
+            // 获取时区数据并开始更新
+            fetchTimezones();
+            updateCurrentTime();
+            
+            // 设置定时器
+            setInterval(updateCurrentTime, 1000);
+            setInterval(updateTimezones, 10000); // 10秒更新一次时区数据
         });
     </script>
-</head>
-<body>
-    <div class="time-container">
-        <h1 class="title">{{appName}} - 时间显示</h1>
-        
-        <div class="time-display" id="current-time">加载中...</div>
-        <div class="date-display" id="current-date">加载中...</div>
-        
-        <div class="timezone-info" id="timezone-info">
-            <!-- 时区信息将通过JavaScript动态更新 -->
-        </div>
-    </div>
 </body>
 </html>

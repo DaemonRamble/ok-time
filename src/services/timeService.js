@@ -30,21 +30,15 @@ class TimeService {
    */
   static getCurrentTimeInfo() {
     const now = new Date();
+    const timeInfo = this.getTimezoneInfo();
     
     return {
       timestamp: now.getTime(),
       iso: now.toISOString(),
-      local: now.toLocaleString('zh-CN', {
-        timeZone: defaultTimezone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      }),
-      timezones: this.getTimezoneInfo()
+      local: now.toLocaleString("zh-CN", { hour12: false }),
+      // 分为两组数据
+      timezones: timeInfo.regular,
+      cities: timeInfo.cities
     };
   }
 
@@ -54,24 +48,47 @@ class TimeService {
    */
   static getTimezoneInfo() {
     const now = new Date();
+    const beijingTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
     
-    return timezones.map(tz => ({
-      name: tz.name,
-      label: tz.label,
-      time: now.toLocaleString('zh-CN', {
-        timeZone: tz.timezone,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      }),
-      date: now.toLocaleDateString('zh-CN', {
-        timeZone: tz.timezone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      })
-    }));
+    const regular = [];
+    const cities = [];
+    
+    timezones.forEach(tz => {
+      const currentTzTime = new Date(now.toLocaleString("en-US", { timeZone: tz.timezone }));
+      const timeDiff = Math.round((currentTzTime.getTime() - beijingTime.getTime()) / (1000 * 60 * 60));
+      const diffText = timeDiff === 0 ? "基准" : (timeDiff > 0 ? `+${timeDiff}小时` : `${timeDiff}小时`);
+      
+      const timeData = {
+        name: tz.name,
+        label: tz.label,
+        time: now.toLocaleString("zh-CN", {
+          timeZone: tz.timezone,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        }),
+        date: now.toLocaleDateString("zh-CN", {
+          timeZone: tz.timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }),
+        timeDiff: diffText,
+        timeDiffValue: timeDiff
+      };
+      
+      if (tz.group === "cities") {
+        cities.push(timeData);
+      } else {
+        regular.push(timeData);
+      }
+    });
+    
+    // 城市按时差排序（从负到正）
+    cities.sort((a, b) => a.timeDiffValue - b.timeDiffValue);
+    
+    return { regular, cities };
   }
 }
 
