@@ -37,7 +37,9 @@ RUN useradd -m -u 1001 user && \
 WORKDIR /app
 
 # Copy application files into the container at /app
-COPY index.js .
+COPY src/ ./src/
+COPY package*.json ./
+RUN npm ci --only=production
 
 # Copy the entrypoint and start scripts to /app and make them executable
 COPY start.sh /app/start.sh

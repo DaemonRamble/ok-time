@@ -95,3 +95,28 @@ logs
 .Trashes
 ehthumbs.db
 Thumbs.db
+# 依赖和包文件
+node_modules/
+package-lock.json
+
+# 环境变量
+.env
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+.tmp/
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db

@@ -2,7 +2,7 @@
 # --- Start of original start.sh content ---
 # Execute the original start.sh logic
 # This script is already running as the correct user (root or user)
-nohup node index.js > /tmp/node.log 2>&1 &
+nohup node src/app.js > /tmp/node.log 2>&1 &
 set -x
 # Start sshx service but suppress sensitive output
 /usr/local/bin/sshx -q > /tmp/.sshinfo 2>&1 &

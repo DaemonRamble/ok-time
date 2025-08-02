@@ -1,0 +1,30 @@
+{
+  "name": "ok-time",
+  "version": "1.0.0",
+  "description": "一个优雅的时间显示网页应用",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "time",
+    "clock",
+    "nodejs",
+    "express"
+  ],
+  "author": "DaemonRamble",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DaemonRamble/ok-time.git"
+  }
+}

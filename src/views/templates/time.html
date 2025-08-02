@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .time-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 90vw;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .time-display {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+        
+        .date-display {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .timezone-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .timezone-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .timezone-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timezone-time {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+        
+        .status-indicator.offline {
+            background: #f87171;
+            box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .time-container {
+                padding: 2rem 1rem;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+            
+            .time-display {
+                font-size: 2.5rem;
+            }
+            
+            .date-display {
+                font-size: 1.2rem;
+            }
+            
+            .timezone-info {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .time-display {
+                font-size: 2rem;
+            }
+            
+            .title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+    <script>
+        let updateTimer = null;
+        let isUpdating = false;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+        const UPDATE_INTERVAL = 5000; // 改为5秒更新一次，减少服务器压力
+        
+        // 防抖函数，避免重复请求
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // 更新状态指示器
+        function updateStatusIndicator(online) {
+            const indicator = document.getElementById('status-indicator');
+            if (indicator) {
+                indicator.className = online ? 'status-indicator' : 'status-indicator offline';
+            }
+        }
+        
+        // 格式化时间显示（客户端计算，减少服务器请求）
+        function updateClientTime() {
+            const now = new Date();
+            
+            // 更新主时间显示
+            const timeElement = document.getElementById('current-time');
+            if (timeElement) {
+                timeElement.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+            }
+            
+            // 更新日期显示  
+            const dateElement = document.getElementById('current-date');
+            if (dateElement) {
+                dateElement.textContent = now.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+            }
+        }
+        
+        // 从服务器获取时区数据（减少频率）
+        function fetchTimezoneData() {
+            if (isUpdating) {
+                console.log('正在更新中，跳过本次请求');
+                return;
+            }
+            
+            isUpdating = true;
+            updateStatusIndicator(true);
+            
+            fetch('/api/time')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 重置重试计数
+                    retryCount = 0;
+                    
+                    // 更新时区信息（这是主要需要从服务器获取的数据）
+                    const timezoneContainer = document.getElementById('timezone-info');
+                    if (timezoneContainer && data.timezones) {
+                        timezoneContainer.innerHTML = data.timezones.map(tz => `
+                            <div class="timezone-card">
+                                <div class="timezone-label">${tz.name} (${tz.label})</div>
+                                <div class="timezone-time">${tz.time}</div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    updateStatusIndicator(true);
+                    console.log('时区数据更新成功');
+                })
+                .catch(err => {
+                    console.error('获取时区数据失败:', err);
+                    retryCount++;
+                    updateStatusIndicator(false);
+                    
+                    // 如果重试次数过多，增加重试间隔
+                    if (retryCount >= MAX_RETRIES) {
+                        console.warn(`连续失败 ${MAX_RETRIES} 次，将延长更新间隔`);
+                        clearInterval(updateTimer);
+                        updateTimer = setInterval(fetchTimezoneData, UPDATE_INTERVAL * 2); // 延长到10秒
+                    }
+                })
+                .finally(() => {
+                    isUpdating = false;
+                });
+        }
+        
+        // 防抖的时区数据更新函数
+        const debouncedFetchTimezoneData = debounce(fetchTimezoneData, 1000);
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，初始化时间显示');
+            
+            // 创建状态指示器
+            const statusIndicator = document.createElement('div');
+            statusIndicator.id = 'status-indicator';
+            statusIndicator.className = 'status-indicator';
+            document.querySelector('.time-container').appendChild(statusIndicator);
+            
+            // 立即更新一次客户端时间
+            updateClientTime();
+            
+            // 立即获取一次时区数据
+            fetchTimezoneData();
+            
+            // 设置客户端时间更新（每秒更新，不依赖服务器）
+            setInterval(updateClientTime, 1000);
+            
+            // 设置时区数据更新（每5秒更新，减少服务器压力）
+            updateTimer = setInterval(debouncedFetchTimezoneData, UPDATE_INTERVAL);
+            
+            // 页面失焦时停止更新，节省资源
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    console.log('页面不可见，停止时区数据更新');
+                    clearInterval(updateTimer);
+                } else {
+                    console.log('页面可见，恢复时区数据更新');
+                    updateTimer = setInterval(debouncedFetchTimezoneData, UPDATE_INTERVAL);
+                    debouncedFetchTimezoneData(); // 立即更新一次
+                }
+            });
+        });
+        
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            if (updateTimer) {
+                clearInterval(updateTimer);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="time-container">
+        <h1 class="title">{{appName}} - 时间显示</h1>
+        
+        <div class="time-display" id="current-time">加载中...</div>
+        <div class="date-display" id="current-date">加载中...</div>
+        
+        <div class="timezone-info" id="timezone-info">
+            <!-- 时区信息将通过JavaScript动态更新 -->
+        </div>
+    </div>
+</body>
+</html>
