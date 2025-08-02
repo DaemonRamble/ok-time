@@ -389,7 +389,7 @@
                 
                 return `
                     <div class="timezone-card">
-                        <div class="city-name">${tz.name}</div>
+                        <div class="city-name">${tz.name} (${tz.label || "UTC"})</div>
                         <div class="city-time">${tz.time}</div>
                         <div class="city-date">${tz.date}</div>
                         <div class="time-diff">距北京时间 ${diffText}</div>
