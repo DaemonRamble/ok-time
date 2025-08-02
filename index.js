@@ -221,9 +221,18 @@ function generateTimeHTML() {
 </html>`;
 }
 
+// Simple HTTP logging function
+function httpLog(req, res) {
+  const timestamp = new Date().toISOString();
+  const ip = req.connection.remoteAddress || "unknown";
+  console.log(timestamp + " " + ip + " " + req.method + " " + req.url + " " + (res.statusCode || "unknown"));
+}
+
 const server = http.createServer((req, res) => {
   if (req.url === '/') {
+  httpLog(req, res);
     // Beautiful HTML time page
+  httpLog(req, res);
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.end(generateTimeHTML());
