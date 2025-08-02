@@ -97,7 +97,6 @@ ehthumbs.db
 Thumbs.db
 # 依赖和包文件
 node_modules/
-package-lock.json
 
 # 环境变量
 .env

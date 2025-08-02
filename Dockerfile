@@ -39,8 +39,10 @@ WORKDIR /app
 # Copy package files first for better layer caching
 COPY package*.json ./
 
-# Install dependencies with better error handling
-RUN npm ci --omit=dev --no-audit --no-fund && \
+# Install dependencies with robust error handling and network retry
+RUN npm config set fetch-timeout 60000 && \
+    npm config set fetch-retries 5 && \
+    npm install --omit=dev --no-audit --no-fund --prefer-offline && \
     npm cache clean --force
 
 # Copy application files
