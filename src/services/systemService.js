@@ -3,7 +3,27 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const TimeService = require('./timeService');
 
+
 class SystemService {
+
+  // Helper function to format uptime
+  static formatUptime(seconds) {
+    const totalMs = seconds * 1000;
+    const ms = totalMs % 1000;
+    const totalSeconds = Math.floor(totalMs / 1000);
+    const s = totalSeconds % 60;
+    const m = Math.floor(totalSeconds / 60) % 60;
+    const h = Math.floor(totalSeconds / 3600) % 24;
+    const d = Math.floor(totalSeconds / 86400);
+
+    let result = '';
+    if (d > 0) result += `${d}d`;
+    if (h > 0) result += `${h}h`;
+    if (m > 0) result += `${m}m`;
+    result += `${s}.${ms.toString().padStart(3, '0')}s`;
+    
+    return result;
+  }
   /**
    * 获取系统状态信息
    * @returns {Promise<Object>} 系统状态对象
